@@ -1,50 +1,8 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Redirection en cours...</title>
-  <script>
-    window.addEventListener("DOMContentLoaded", () => {
-      const params = new URLSearchParams(window.location.search);
-      let emailParam = params.get("email");
-
-      if (!emailParam) {
-        document.body.innerHTML = "<h2>Adresse e-mail manquante.</h2>";
-        return;
-      }
-
-      // ✅ Décodage propre du %40 en @
-      emailParam = decodeURIComponent(emailParam).trim().toLowerCase();
-      console.log("Email recherché :", emailParam);
-
-      const sheetURL = "https://opensheet.elk.sh/1Sw8P2bChsya2B1LtsV-D2qUHsBCOL_RMpBReABLSAdA/Feuille";
-
-      fetch(sheetURL)
-        .then(res => res.json())
-        .then(data => {
-          if (!Array.isArray(data)) {
-            throw new Error("La feuille n’a pas retourné un tableau.");
-          }
-
-          const match = data.find(row => {
-            const sheetEmail = row.email?.trim().toLowerCase();
-            console.log("Comparaison avec :", sheetEmail);
-            return sheetEmail === emailParam;
-          });
-
-          if (match && match.redirect_url) {
-            console.log("Redirection vers :", match.redirect_url);
-            window.location.href = match.redirect_url;
-          } else {
-            document.body.innerHTML = "<h2>Email non reconnu.<br>Assure-toi d'avoir utilisé le bon lien.</h2>";
-          }
-        })
-        .catch(err => {
-          console.error("Erreur de récupération des données :", err);
-          document.body.innerHTML = "<h2>Erreur technique. Réessaye plus tard.</h2>";
-        });
-    });
-  </script>
   <style>
     body {
       font-family: system-ui, sans-serif;
@@ -56,5 +14,35 @@
 <body>
   <h2>Redirection en cours…</h2>
   <p>Merci pour votre inscription 🙏</p>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const rawEmail = params.get("email");
+    const emailParam = decodeURIComponent(rawEmail).trim().toLowerCase();
+    console.log("Email recherché :", emailParam);
+
+    fetch("https://opensheet.elk.sh/1Sw8P2bChsya2B1LtsV-D2qUHsBCOL_RMpBReABLSAdA/Feuille")
+      .then(res => res.json())
+      .then(data => {
+        if (!Array.isArray(data)) throw new Error("Réponse invalide");
+
+        const match = data.find(row => {
+          const sheetEmail = (row.email || "").trim().toLowerCase();
+          console.log("Comparaison avec :", sheetEmail);
+          return sheetEmail === emailParam;
+        });
+
+        if (match && match.redirect_url) {
+          console.log("Redirection vers :", match.redirect_url);
+          window.location.href = match.redirect_url;
+        } else {
+          document.body.innerHTML = "<h2>Email non reconnu.<br>Assure-toi d'avoir utilisé le bon lien.</h2>";
+        }
+      })
+      .catch(err => {
+        console.error("Erreur fetch :", err);
+        document.body.innerHTML = "<h2>Erreur de redirection. Réessaye plus tard.</h2>";
+      });
+  </script>
 </body>
 </html>
