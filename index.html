@@ -2,34 +2,71 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Redirection en cours...</title>
+  <title>Création de votre espace…</title>
   <style>
     body {
       font-family: system-ui, sans-serif;
       text-align: center;
       margin-top: 100px;
+      color: #333;
     }
-    .loading {
+
+    .loader {
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #000;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .message {
       font-size: 18px;
-      color: #666;
-      margin-top: 20px;
+      margin-bottom: 30px;
+      min-height: 48px;
     }
-    .countdown {
-      font-size: 24px;
-      font-weight: bold;
-      margin-top: 10px;
+
+    #retry-container {
+      display: none;
+    }
+
+    #retry-container button {
+      background-color: #000;
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #retry-container button:hover {
+      background-color: #222;
     }
   </style>
 </head>
 <body>
-  <h2>Redirection en cours…</h2>
-  <p>Merci pour votre inscription 🙏</p>
-  <div class="loading" id="loading-text">Initialisation...</div>
-  <div class="countdown" id="countdown">15</div>
+  <div class="loader"></div>
+  <div class="message" id="message">Synchronisation des informations…</div>
+
+  <div id="retry-container">
+    <p><strong>La création de votre espace est toujours en cours.</strong><br>
+    Vous pouvez actualiser cette page pour réessayer.<br>
+    Un email vous a également été envoyé.</p>
+    <button onclick="location.reload()">Actualiser</button>
+  </div>
 
   <script>
     const params = new URLSearchParams(window.location.search);
     const emailParam = params.get("email");
+    const messageDiv = document.getElementById("message");
+    const retryDiv = document.getElementById("retry-container");
 
     if (!emailParam) {
       document.body.innerHTML = "<h2>Adresse e-mail manquante.</h2>";
@@ -39,25 +76,27 @@
     const cleanedEmail = decodeURIComponent(emailParam.trim().toLowerCase());
     console.log("Email recherché :", cleanedEmail);
 
-    // Affichage du compte à rebours
-    let countdown = 15;
-    const countdownElement = document.getElementById("countdown");
-    const loadingText = document.getElementById("loading-text");
+    // Messages dynamiques toutes les 3 secondes
+    const messages = [
+      "Synchronisation des informations…",
+      "Vérification des accès…",
+      "Création de votre espace personnel…",
+      "Finalisation…"
+    ];
 
-    const countdownInterval = setInterval(() => {
-      countdown--;
-      countdownElement.textContent = countdown;
-
-      if (countdown === 10) loadingText.textContent = "Recherche du lien dans notre base...";
-      if (countdown === 5) loadingText.textContent = "Presque prêt. Vérification du lien sécurisé...";
-      if (countdown <= 0) {
-        clearInterval(countdownInterval);
-        loadingText.textContent = "Redirection imminente...";
+    let step = 0;
+    const messageInterval = setInterval(() => {
+      step++;
+      if (step < messages.length) {
+        messageDiv.textContent = messages[step];
       }
-    }, 1000);
+    }, 3000);
 
-    // Redirection après 15 secondes
+    let redirectionFaite = false;
+
+    // Tentative de redirection après 10 secondes
     setTimeout(() => {
+      clearInterval(messageInterval);
       fetch("https://opensheet.elk.sh/1Sw8P2bChsya2B1LtsV-D2qUHsBCOL_RMpBReABLSAdA/Feuille")
         .then(res => res.json())
         .then(data => {
@@ -68,17 +107,25 @@
           });
 
           if (match && match.redirect_url) {
-            console.log("Redirection vers :", match.redirect_url);
+            redirectionFaite = true;
             window.location.href = match.redirect_url;
           } else {
-            document.body.innerHTML = "<h2>Email non reconnu.<br>Assure-toi d'avoir utilisé le bon lien.</h2>";
+            showRetry();
           }
         })
         .catch(err => {
           console.error("Erreur fetch :", err);
-          document.body.innerHTML = "<h2>Erreur de redirection. Réessaye plus tard.</h2>";
+          showRetry();
         });
-    }, 15000);
+    }, 10000);
+
+    function showRetry() {
+      if (!redirectionFaite) {
+        document.querySelector(".loader").style.display = "none";
+        messageDiv.style.display = "none";
+        retryDiv.style.display = "block";
+      }
+    }
   </script>
 </body>
 </html>
