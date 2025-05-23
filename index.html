@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Redirection en cours...</title>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const emailParam = params.get("email");
+
+    fetch("https://opensheet.elk.sh/2PACX-1vTN-yS68YSoChNd6NJYkwONF06XAJ-CwDMs2OtLPIJahltvqFZ-8eQbPLBr19zWySONHFjv/Feuille%201")
+      .then(res => res.json())
+      .then(data => {
+        const match = data.find(row => row.email.trim().toLowerCase() === emailParam.trim().toLowerCase());
+        if (match && match.redirect_url) {
+          window.location.href = match.redirect_url;
+        } else {
+          document.body.innerHTML = "<h2>Lien de paiement introuvable.</h2>";
+        }
+      })
+      .catch(err => {
+        document.body.innerHTML = "<h2>Erreur de redirection. Réessaye plus tard.</h2>";
+        console.error(err);
+      });
+  </script>
+</head>
+<body>
+  <h2>Redirection en cours…</h2>
+</body>
+</html>
