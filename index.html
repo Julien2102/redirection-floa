@@ -18,6 +18,10 @@
         const cleanedEmail = emailParam.trim().toLowerCase();
         console.log("Email reçu :", cleanedEmail);
 
+        if (!Array.isArray(data)) {
+          throw new Error("Données mal reçues ou mal formées : pas un tableau");
+        }
+
         const match = data.find(row => {
           const sheetEmail = row.email?.trim().toLowerCase();
           console.log("Comparaison avec :", sheetEmail);
