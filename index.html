@@ -5,7 +5,7 @@
   <title>Redirection en cours...</title>
   <script>
     const params = new URLSearchParams(window.location.search);
-    const emailParam = decodeURIComponent(params.get("email")); // décode %40 en @
+    const emailParam = decodeURIComponent(params.get("email")); // ✅ On décode %40 => @
 
     if (!emailParam) {
       document.body.innerHTML = "<h2>Adresse e-mail manquante.</h2>";
@@ -15,15 +15,12 @@
     fetch("https://opensheet.elk.sh/1Sw8P2bChsya2B1LtsV-D2qUHsBCOL_RMpBReABLSAdA/Feuille")
       .then(res => res.json())
       .then(data => {
-        if (!Array.isArray(data)) {
-          throw new Error("Données mal reçues ou mal formées : pas un tableau");
-        }
-
         const cleanedEmail = emailParam.trim().toLowerCase();
         console.log("Email reçu :", cleanedEmail);
 
         const match = data.find(row => {
           const sheetEmail = row.email?.trim().toLowerCase();
+          console.log("Comparaison avec :", sheetEmail);
           return sheetEmail === cleanedEmail;
         });
 
@@ -49,4 +46,6 @@
 </head>
 <body>
   <h2>Redirection en cours…</h2>
-  <p>Merci pour votre inscription 🙏</p
+  <p>Merci pour votre inscription 🙏</p>
+</body>
+</html>
