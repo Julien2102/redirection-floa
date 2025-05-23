@@ -12,7 +12,7 @@
       throw new Error("Aucune adresse e-mail fournie.");
     }
 
-    fetch("https://opensheet.elk.sh/2PACX-1vTN-yS68YSoChNd6NJYkwONF06XAJ-CwDMs2OtLPIJahltvqFZ-8eQbPLBr19zWySONHFjv/Feuille")
+    fetch("https://opensheet.elk.sh/1Sw8P2bChsya2BlLtSv-D2qUhSBCOL_RMpBReABLSAdA/Feuille")
       .then(res => res.json())
       .then(data => {
         const cleanedEmail = emailParam.trim().toLowerCase();
@@ -49,4 +49,3 @@
   <p>Merci pour votre inscription 🙏</p>
 </body>
 </html>
-
