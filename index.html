@@ -7,8 +7,13 @@
     body {
       font-family: system-ui, sans-serif;
       text-align: center;
-      margin-top: 100px;
+      margin-top: 60px;
       color: #333;
+    }
+
+    .logo {
+      width: 120px;
+      margin-bottom: 30px;
     }
 
     .loader {
@@ -49,17 +54,33 @@
     #retry-container button:hover {
       background-color: #222;
     }
+
+    .retry-note {
+      font-size: 15px;
+      margin-top: 20px;
+      color: #666;
+    }
   </style>
 </head>
 <body>
+
+  <!-- ✅ Logo intégré depuis Google Drive -->
+  <img src="https://drive.google.com/uc?export=view&id=1PXJOeJRDkqmz3sIpkoZrisRyjDGHbYNB" alt="Logo École Grain" class="logo" />
+
   <div class="loader"></div>
-  <div class="message" id="message">Synchronisation des informations…</div>
+  <div class="message" id="message">
+    Synchronisation des informations…<br>
+    <small>Vous allez être redirigé dans moins de 10 secondes.</small>
+  </div>
 
   <div id="retry-container">
     <p><strong>La création de votre espace est toujours en cours.</strong><br>
-    Vous pouvez actualiser cette page pour réessayer.<br>
-    Un email vous a également été envoyé.</p>
+    Vous pouvez actualiser cette page pour réessayer.</p>
     <button onclick="location.reload()">Actualiser</button>
+    <p class="retry-note">
+      Le lien de paiement a également été envoyé par email.<br>
+      Pour toute question, contactez-nous sur <strong>support@ecolegrain.com</strong>
+    </p>
   </div>
 
   <script>
@@ -76,25 +97,24 @@
     const cleanedEmail = decodeURIComponent(emailParam.trim().toLowerCase());
     console.log("Email recherché :", cleanedEmail);
 
-    // Messages dynamiques toutes les 3 secondes
+    // Textes dynamiques
     const messages = [
-      "Synchronisation des informations…",
-      "Vérification des accès…",
-      "Création de votre espace personnel…",
-      "Finalisation…"
+      "Synchronisation des informations…<br><small>Vous allez être redirigé dans moins de 10 secondes.</small>",
+      "Création de votre espace personnel…<br><small>Vous allez être redirigé dans moins de 10 secondes.</small>",
+      "Finalisation…<br><small>Vous allez être redirigé dans moins de 10 secondes.</small>"
     ];
 
     let step = 0;
     const messageInterval = setInterval(() => {
       step++;
       if (step < messages.length) {
-        messageDiv.textContent = messages[step];
+        messageDiv.innerHTML = messages[step];
       }
     }, 3000);
 
     let redirectionFaite = false;
 
-    // Tentative de redirection après 10 secondes
+    // Redirection après 10 secondes
     setTimeout(() => {
       clearInterval(messageInterval);
       fetch("https://opensheet.elk.sh/1Sw8P2bChsya2B1LtsV-D2qUHsBCOL_RMpBReABLSAdA/Feuille")
