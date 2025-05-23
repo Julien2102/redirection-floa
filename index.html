@@ -5,27 +5,25 @@
   <title>Redirection en cours...</title>
   <script>
     const params = new URLSearchParams(window.location.search);
-    const emailParam = params.get("email");
+    const emailParam = decodeURIComponent(params.get("email")); // décode %40 en @
 
     if (!emailParam) {
       document.body.innerHTML = "<h2>Adresse e-mail manquante.</h2>";
       throw new Error("Aucune adresse e-mail fournie.");
     }
 
-    fetch("fetch("https://opensheet.elk.sh/1Sw8P2bChsya2B1LtsV-D2qUHsBCOL_RMpBReABLSAdA/Feuille")
-")
+    fetch("https://opensheet.elk.sh/1Sw8P2bChsya2B1LtsV-D2qUHsBCOL_RMpBReABLSAdA/Feuille")
       .then(res => res.json())
       .then(data => {
-        const cleanedEmail = emailParam.trim().toLowerCase();
-        console.log("Email reçu :", cleanedEmail);
-
         if (!Array.isArray(data)) {
           throw new Error("Données mal reçues ou mal formées : pas un tableau");
         }
 
+        const cleanedEmail = emailParam.trim().toLowerCase();
+        console.log("Email reçu :", cleanedEmail);
+
         const match = data.find(row => {
           const sheetEmail = row.email?.trim().toLowerCase();
-          console.log("Comparaison avec :", sheetEmail);
           return sheetEmail === cleanedEmail;
         });
 
@@ -51,6 +49,4 @@
 </head>
 <body>
   <h2>Redirection en cours…</h2>
-  <p>Merci pour votre inscription 🙏</p>
-</body>
-</html>
+  <p>Merci pour votre inscription 🙏</p
