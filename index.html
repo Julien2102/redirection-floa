@@ -12,7 +12,7 @@
       throw new Error("Aucune adresse e-mail fournie.");
     }
 
-    fetch("https://opensheet.elk.sh/2PACX-1vTN-yS68YSoChNd6NJYkwONF06XAJ-CwDMs2OtLPIJahltvqFZ-8eQbPLBr19zWySONHFjv/Feuille%201")
+    fetch("https://opensheet.elk.sh/2PACX-1vTN-yS68YSoChNd6NJYkwONF06XAJ-CwDMs2OtLPIJahltvqFZ-8eQbPLBr19zWySONHFjv/Feuille")
       .then(res => res.json())
       .then(data => {
         const cleanedEmail = emailParam.trim().toLowerCase();
