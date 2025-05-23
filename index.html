@@ -2,18 +2,20 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Création de votre espace…</title>
+  <title>Redirection en cours...</title>
   <style>
     body {
       font-family: system-ui, sans-serif;
       text-align: center;
-      margin-top: 60px;
-      color: #333;
+      padding: 40px 20px;
+      background-color: #fff;
     }
 
-    .logo {
-      width: 120px;
-      margin-bottom: 30px;
+    img.logo {
+      max-width: 200px;
+      width: 40%;
+      height: auto;
+      margin-bottom: 20px;
     }
 
     .loader {
@@ -23,7 +25,7 @@
       width: 50px;
       height: 50px;
       animation: spin 1s linear infinite;
-      margin: 0 auto 20px;
+      margin: 20px auto;
     }
 
     @keyframes spin {
@@ -31,121 +33,83 @@
       100% { transform: rotate(360deg); }
     }
 
-    .message {
+    .error {
+      color: #000;
       font-size: 18px;
-      margin-bottom: 30px;
-      min-height: 48px;
+      margin-top: 30px;
     }
 
-    #retry-container {
-      display: none;
-    }
-
-    #retry-container button {
+    .btn-retry {
       background-color: #000;
       color: #fff;
-      border: none;
       padding: 12px 24px;
-      font-size: 16px;
+      border: none;
       border-radius: 4px;
       cursor: pointer;
-    }
-
-    #retry-container button:hover {
-      background-color: #222;
-    }
-
-    .retry-note {
-      font-size: 15px;
+      font-size: 16px;
       margin-top: 20px;
-      color: #666;
+    }
+
+    .fade {
+      animation: fadeIn 1.2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
     }
   </style>
 </head>
 <body>
+  <img src="https://imgur.com/AnYmAuZ.png" alt="Logo École Grain" class="logo fade">
 
-  <!-- ✅ Logo intégré depuis Google Drive -->
-  <img src="https://imgur.com/AnYmAuZ.png" alt="Logo École Grain" class="logo" />
+  <div class="loader fade"></div>
 
-  <div class="loader"></div>
-  <div class="message" id="message">
-    Synchronisation des informations…<br>
-    <small>Vous allez être redirigé dans moins de 10 secondes.</small>
-  </div>
+  <p class="fade">Synchronisation des informations…<br>Vous allez être redirigé dans moins de 10 secondes.</p>
 
-  <div id="retry-container">
-    <p><strong>La création de votre espace est toujours en cours.</strong><br>
-    Vous pouvez actualiser cette page pour réessayer.</p>
-    <button onclick="location.reload()">Actualiser</button>
-    <p class="retry-note">
-      Le lien de paiement a également été envoyé par email.<br>
-      Pour toute question, contactez-nous sur <strong>support@ecolegrain.com</strong>
-    </p>
+  <div id="error" class="error" style="display:none;">
+    La synchronisation semble prendre un peu plus de temps.<br>
+    Cliquez ci-dessous pour réessayer.<br><br>
+    <button class="btn-retry" onclick="location.reload()">Actualiser la page</button><br><br>
+    Si cela ne fonctionne toujours pas, vous pouvez finaliser votre inscription depuis le lien envoyé par mail.<br>
+    Pour toute question, contactez-nous à <strong>support@ecolegrain.com</strong>.
   </div>
 
   <script>
     const params = new URLSearchParams(window.location.search);
     const emailParam = params.get("email");
-    const messageDiv = document.getElementById("message");
-    const retryDiv = document.getElementById("retry-container");
 
     if (!emailParam) {
       document.body.innerHTML = "<h2>Adresse e-mail manquante.</h2>";
       throw new Error("Aucune adresse e-mail fournie.");
     }
 
-    const cleanedEmail = decodeURIComponent(emailParam.trim().toLowerCase());
-    console.log("Email recherché :", cleanedEmail);
+    const email = decodeURIComponent(emailParam.trim().toLowerCase());
+    console.log("Email recherché :", email);
 
-    // Textes dynamiques
-    const messages = [
-      "Synchronisation des informations…<br><small>Vous allez être redirigé dans moins de 10 secondes.</small>",
-      "Création de votre espace personnel…<br><small>Vous allez être redirigé dans moins de 10 secondes.</small>",
-      "Finalisation…<br><small>Vous allez être redirigé dans moins de 10 secondes.</small>"
-    ];
-
-    let step = 0;
-    const messageInterval = setInterval(() => {
-      step++;
-      if (step < messages.length) {
-        messageDiv.innerHTML = messages[step];
-      }
-    }, 3000);
-
-    let redirectionFaite = false;
-
-    // Redirection après 10 secondes
+    // Attente de 10 secondes
     setTimeout(() => {
-      clearInterval(messageInterval);
       fetch("https://opensheet.elk.sh/1Sw8P2bChsya2B1LtsV-D2qUHsBCOL_RMpBReABLSAdA/Feuille")
         .then(res => res.json())
         .then(data => {
-          const match = data.find(row => {
-            const sheetEmail = row.email?.trim().toLowerCase();
-            console.log("Comparaison avec :", sheetEmail);
-            return sheetEmail === cleanedEmail;
-          });
+          const match = data.find(row => row.email?.trim().toLowerCase() === email);
+          console.log("Comparaison match :", match);
 
           if (match && match.redirect_url) {
-            redirectionFaite = true;
             window.location.href = match.redirect_url;
           } else {
-            showRetry();
+            document.querySelector(".loader").style.display = "none";
+            document.querySelector("p").style.display = "none";
+            document.getElementById("error").style.display = "block";
           }
         })
         .catch(err => {
           console.error("Erreur fetch :", err);
-          showRetry();
+          document.querySelector(".loader").style.display = "none";
+          document.querySelector("p").style.display = "none";
+          document.getElementById("error").style.display = "block";
         });
     }, 10000);
-
-    function showRetry() {
-      if (!redirectionFaite) {
-        document.querySelector(".loader").style.display = "none";
-        messageDiv.style.display = "none";
-        retryDiv.style.display = "block";
-      }
-    }
   </script>
 </body>
 </html>
