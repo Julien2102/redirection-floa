@@ -2,30 +2,28 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Redirection en cours...</title>
+  <title>Création de votre espace…</title>
   <style>
     body {
       font-family: system-ui, sans-serif;
       text-align: center;
-      padding: 40px 20px;
-      background-color: #fff;
+      margin-top: 60px;
+      color: #333;
     }
 
     .logo {
-      width: 160px;
-      max-width: 50%;
-      height: auto;
-      margin-bottom: 20px;
+      width: 120px;
+      margin-bottom: 30px;
     }
 
     .loader {
       border: 6px solid #f3f3f3;
       border-top: 6px solid #000;
       border-radius: 50%;
-      width: 60px;
-      height: 60px;
+      width: 50px;
+      height: 50px;
       animation: spin 1s linear infinite;
-      margin: 20px auto;
+      margin: 0 auto 20px;
     }
 
     @keyframes spin {
@@ -33,93 +31,121 @@
       100% { transform: rotate(360deg); }
     }
 
-    .error {
-      color: #000;
-      font-size: 16px;
-      margin-top: 30px;
+    .message {
+      font-size: 18px;
+      margin-bottom: 30px;
+      min-height: 48px;
     }
 
-    .btn-retry {
+    #retry-container {
+      display: none;
+    }
+
+    #retry-container button {
       background-color: #000;
       color: #fff;
-      padding: 12px 24px;
       border: none;
+      padding: 12px 24px;
+      font-size: 16px;
       border-radius: 4px;
       cursor: pointer;
-      font-size: 16px;
+    }
+
+    #retry-container button:hover {
+      background-color: #222;
+    }
+
+    .retry-note {
+      font-size: 15px;
       margin-top: 20px;
-    }
-
-    .fade {
-      animation: fadeIn 1.2s ease-in-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to   { opacity: 1; }
+      color: #666;
     }
   </style>
 </head>
 <body>
-  <img src="https://i.imgur.com/AnYmAuZ.png" alt="Logo École Grain" class="logo fade" />
 
-  <div class="loader fade"></div>
+  <!-- ✅ Logo intégré depuis Google Drive -->
+  <img src="https://imgur.com/AnYmAuZ.png" alt="Logo École Grain" class="logo" />
 
-  <p id="message" class="fade">Synchronisation des informations…<br>Vous allez être redirigé dans moins de 10 secondes.</p>
+  <div class="loader"></div>
+  <div class="message" id="message">
+    Synchronisation des informations…<br>
+    <small>Vous allez être redirigé dans moins de 10 secondes.</small>
+  </div>
 
-  <div id="error" class="error" style="display:none;">
-    La synchronisation prend un peu plus de temps.<br>
-    Cliquez sur le bouton ci-dessous pour réessayer.<br><br>
-    <button class="btn-retry" onclick="location.reload()">Actualiser la page</button><br><br>
-    Si besoin, vous avez reçu un e-mail avec le lien de finalisation de votre inscription.<br>
-    Vous pouvez aussi nous contacter à <strong>support@ecolegrain.com</strong>.
+  <div id="retry-container">
+    <p><strong>La création de votre espace est toujours en cours.</strong><br>
+    Vous pouvez actualiser cette page pour réessayer.</p>
+    <button onclick="location.reload()">Actualiser</button>
+    <p class="retry-note">
+      Le lien de paiement a également été envoyé par email.<br>
+      Pour toute question, contactez-nous sur <strong>support@ecolegrain.com</strong>
+    </p>
   </div>
 
   <script>
     const params = new URLSearchParams(window.location.search);
     const emailParam = params.get("email");
+    const messageDiv = document.getElementById("message");
+    const retryDiv = document.getElementById("retry-container");
 
     if (!emailParam) {
       document.body.innerHTML = "<h2>Adresse e-mail manquante.</h2>";
       throw new Error("Aucune adresse e-mail fournie.");
     }
 
-    const email = decodeURIComponent(emailParam.trim().toLowerCase());
-    console.log("Email recherché :", email);
+    const cleanedEmail = decodeURIComponent(emailParam.trim().toLowerCase());
+    console.log("Email recherché :", cleanedEmail);
 
+    // Textes dynamiques
     const messages = [
-      "Synchronisation des informations…",
-      "Création de votre espace personnel…",
-      "Connexion sécurisée…",
-      "Finalisation…"
+      "Synchronisation des informations…<br><small>Vous allez être redirigé dans moins de 10 secondes.</small>",
+      "Création de votre espace personnel…<br><small>Vous allez être redirigé dans moins de 10 secondes.</small>",
+      "Finalisation…<br><small>Vous allez être redirigé dans moins de 10 secondes.</small>"
     ];
-    let i = 0;
-    const messageElement = document.getElementById("message");
-    setInterval(() => {
-      i = (i + 1) % messages.length;
-      messageElement.innerHTML = messages[i] + "<br>Vous allez être redirigé dans moins de 10 secondes.";
+
+    let step = 0;
+    const messageInterval = setInterval(() => {
+      step++;
+      if (step < messages.length) {
+        messageDiv.innerHTML = messages[step];
+      }
     }, 3000);
 
-    fetch("https://opensheet.elk.sh/1Sw8P2bChsya2B1LtsV-D2qUHsBCOL_RMpBReABLSAdA/Feuille")
-      .then(res => res.json())
-      .then(data => {
-        const match = data.find(row => row.email?.trim().toLowerCase() === email);
-        if (match && match.redirect_url) {
-          setTimeout(() => {
+    let redirectionFaite = false;
+
+    // Redirection après 10 secondes
+    setTimeout(() => {
+      clearInterval(messageInterval);
+      fetch("https://opensheet.elk.sh/1Sw8P2bChsya2B1LtsV-D2qUHsBCOL_RMpBReABLSAdA/Feuille")
+        .then(res => res.json())
+        .then(data => {
+          const match = data.find(row => {
+            const sheetEmail = row.email?.trim().toLowerCase();
+            console.log("Comparaison avec :", sheetEmail);
+            return sheetEmail === cleanedEmail;
+          });
+
+          if (match && match.redirect_url) {
+            redirectionFaite = true;
             window.location.href = match.redirect_url;
-          }, 10000);
-        } else {
-          document.querySelector(".loader").style.display = "none";
-          document.getElementById("message").style.display = "none";
-          document.getElementById("error").style.display = "block";
-        }
-      })
-      .catch(err => {
-        console.error("Erreur fetch :", err);
+          } else {
+            showRetry();
+          }
+        })
+        .catch(err => {
+          console.error("Erreur fetch :", err);
+          showRetry();
+        });
+    }, 10000);
+
+    function showRetry() {
+      if (!redirectionFaite) {
         document.querySelector(".loader").style.display = "none";
-        document.getElementById("message").style.display = "none";
-        document.getElementById("error").style.display = "block";
-      });
+        messageDiv.style.display = "none";
+        retryDiv.style.display = "block";
+      }
+    }
   </script>
 </body>
 </html>
