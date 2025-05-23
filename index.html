@@ -11,9 +11,9 @@
       background-color: #fff;
     }
 
-    img.logo {
-      max-width: 200px;
-      width: 40%;
+    .logo {
+      width: 160px;
+      max-width: 50%;
       height: auto;
       margin-bottom: 20px;
     }
@@ -22,8 +22,8 @@
       border: 6px solid #f3f3f3;
       border-top: 6px solid #000;
       border-radius: 50%;
-      width: 50px;
-      height: 50px;
+      width: 60px;
+      height: 60px;
       animation: spin 1s linear infinite;
       margin: 20px auto;
     }
@@ -35,7 +35,7 @@
 
     .error {
       color: #000;
-      font-size: 18px;
+      font-size: 16px;
       margin-top: 30px;
     }
 
@@ -61,18 +61,18 @@
   </style>
 </head>
 <body>
-  <img src="https://imgur.com/AnYmAuZ.png" alt="Logo École Grain" class="logo fade">
+  <img src="https://i.imgur.com/AnYmAuZ.png" alt="Logo École Grain" class="logo fade" />
 
   <div class="loader fade"></div>
 
-  <p class="fade">Synchronisation des informations…<br>Vous allez être redirigé dans moins de 10 secondes.</p>
+  <p id="message" class="fade">Synchronisation des informations…<br>Vous allez être redirigé dans moins de 10 secondes.</p>
 
   <div id="error" class="error" style="display:none;">
-    La synchronisation semble prendre un peu plus de temps.<br>
-    Cliquez ci-dessous pour réessayer.<br><br>
+    La synchronisation prend un peu plus de temps.<br>
+    Cliquez sur le bouton ci-dessous pour réessayer.<br><br>
     <button class="btn-retry" onclick="location.reload()">Actualiser la page</button><br><br>
-    Si cela ne fonctionne toujours pas, vous pouvez finaliser votre inscription depuis le lien envoyé par mail.<br>
-    Pour toute question, contactez-nous à <strong>support@ecolegrain.com</strong>.
+    Si besoin, vous avez reçu un e-mail avec le lien de finalisation de votre inscription.<br>
+    Vous pouvez aussi nous contacter à <strong>support@ecolegrain.com</strong>.
   </div>
 
   <script>
@@ -87,26 +87,38 @@
     const email = decodeURIComponent(emailParam.trim().toLowerCase());
     console.log("Email recherché :", email);
 
-    // Attente de 10 secondes
+    // Textes dynamiques
+    const messages = [
+      "Synchronisation des informations…",
+      "Création de votre espace personnel…",
+      "Connexion sécurisée…",
+      "Finalisation…"
+    ];
+    let i = 0;
+    const messageElement = document.getElementById("message");
+    setInterval(() => {
+      i = (i + 1) % messages.length;
+      messageElement.innerHTML = messages[i] + "<br>Vous allez être redirigé dans moins de 10 secondes.";
+    }, 3000);
+
+    // Redirection après 10 secondes
     setTimeout(() => {
       fetch("https://opensheet.elk.sh/1Sw8P2bChsya2B1LtsV-D2qUHsBCOL_RMpBReABLSAdA/Feuille")
         .then(res => res.json())
         .then(data => {
           const match = data.find(row => row.email?.trim().toLowerCase() === email);
-          console.log("Comparaison match :", match);
-
           if (match && match.redirect_url) {
             window.location.href = match.redirect_url;
           } else {
             document.querySelector(".loader").style.display = "none";
-            document.querySelector("p").style.display = "none";
+            document.getElementById("message").style.display = "none";
             document.getElementById("error").style.display = "block";
           }
         })
         .catch(err => {
           console.error("Erreur fetch :", err);
           document.querySelector(".loader").style.display = "none";
-          document.querySelector("p").style.display = "none";
+          document.getElementById("message").style.display = "none";
           document.getElementById("error").style.display = "block";
         });
     }, 10000);
