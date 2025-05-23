@@ -9,11 +9,23 @@
       text-align: center;
       margin-top: 100px;
     }
+    .loading {
+      font-size: 18px;
+      color: #666;
+      margin-top: 20px;
+    }
+    .countdown {
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
   <h2>Redirection en cours…</h2>
-  <p>Merci pour votre inscription 🙏<br>Veuillez patienter quelques secondes...</p>
+  <p>Merci pour votre inscription 🙏</p>
+  <div class="loading" id="loading-text">Initialisation...</div>
+  <div class="countdown" id="countdown">15</div>
 
   <script>
     const params = new URLSearchParams(window.location.search);
@@ -27,7 +39,24 @@
     const cleanedEmail = decodeURIComponent(emailParam.trim().toLowerCase());
     console.log("Email recherché :", cleanedEmail);
 
-    // ⏱ Attente de 15 secondes avant de lancer le fetch
+    // Affichage du compte à rebours
+    let countdown = 15;
+    const countdownElement = document.getElementById("countdown");
+    const loadingText = document.getElementById("loading-text");
+
+    const countdownInterval = setInterval(() => {
+      countdown--;
+      countdownElement.textContent = countdown;
+
+      if (countdown === 10) loadingText.textContent = "Recherche du lien dans notre base...";
+      if (countdown === 5) loadingText.textContent = "Presque prêt. Vérification du lien sécurisé...";
+      if (countdown <= 0) {
+        clearInterval(countdownInterval);
+        loadingText.textContent = "Redirection imminente...";
+      }
+    }, 1000);
+
+    // Redirection après 15 secondes
     setTimeout(() => {
       fetch("https://opensheet.elk.sh/1Sw8P2bChsya2B1LtsV-D2qUHsBCOL_RMpBReABLSAdA/Feuille")
         .then(res => res.json())
@@ -49,7 +78,7 @@
           console.error("Erreur fetch :", err);
           document.body.innerHTML = "<h2>Erreur de redirection. Réessaye plus tard.</h2>";
         });
-    }, 15000); // 15000 ms = 15 sec
+    }, 15000);
   </script>
 </body>
 </html>
