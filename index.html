@@ -87,7 +87,6 @@
     const email = decodeURIComponent(emailParam.trim().toLowerCase());
     console.log("Email recherché :", email);
 
-    // Textes dynamiques
     const messages = [
       "Synchronisation des informations…",
       "Création de votre espace personnel…",
@@ -101,27 +100,26 @@
       messageElement.innerHTML = messages[i] + "<br>Vous allez être redirigé dans moins de 10 secondes.";
     }, 3000);
 
-    // Redirection après 10 secondes
-    setTimeout(() => {
-      fetch("https://opensheet.elk.sh/1Sw8P2bChsya2B1LtsV-D2qUHsBCOL_RMpBReABLSAdA/Feuille")
-        .then(res => res.json())
-        .then(data => {
-          const match = data.find(row => row.email?.trim().toLowerCase() === email);
-          if (match && match.redirect_url) {
+    fetch("https://opensheet.elk.sh/1Sw8P2bChsya2B1LtsV-D2qUHsBCOL_RMpBReABLSAdA/Feuille")
+      .then(res => res.json())
+      .then(data => {
+        const match = data.find(row => row.email?.trim().toLowerCase() === email);
+        if (match && match.redirect_url) {
+          setTimeout(() => {
             window.location.href = match.redirect_url;
-          } else {
-            document.querySelector(".loader").style.display = "none";
-            document.getElementById("message").style.display = "none";
-            document.getElementById("error").style.display = "block";
-          }
-        })
-        .catch(err => {
-          console.error("Erreur fetch :", err);
+          }, 10000);
+        } else {
           document.querySelector(".loader").style.display = "none";
           document.getElementById("message").style.display = "none";
           document.getElementById("error").style.display = "block";
-        });
-    }, 10000);
+        }
+      })
+      .catch(err => {
+        console.error("Erreur fetch :", err);
+        document.querySelector(".loader").style.display = "none";
+        document.getElementById("message").style.display = "none";
+        document.getElementById("error").style.display = "block";
+      });
   </script>
 </body>
 </html>
